@@ -1,0 +1,187 @@
+{
+  "project": {
+    "name": "ESP32 Color Matcher",
+    "description": "ESP32-based color measurement device with TCS3430 sensor and web interface",
+    "deviceIP": "192.168.0.152",
+    "firmware": "src/main.cpp",
+    "webInterface": "React TypeScript application"
+  },
+  "sensor": {
+    "model": "TCS3430",
+    "channels": {
+      "CH0": "Z (getZData())",
+      "CH1": "Y (getYData())",
+      "CH2": "IR1 (getIR1Data())",
+      "CH3": "X/IR2 (getXData(), getIR2Data())"
+    },
+    "registers": {
+      "ENABLE": "PON/AEN control",
+      "AZ_CONFIG": "0xD6 for auto-zero configuration"
+    },
+    "optimalSettings": {
+      "ATIME": 150,
+      "AGAIN": "16x",
+      "scanBrightness": 128,
+      "autoZeroMode": 1,
+      "autoZeroFrequency": 127,
+      "waitTime": "0-10"
+    }
+  },
+  "calibration": {
+    "methodology": "Matrix-based colorimetric calibration",
+    "targetWhite": "Dulux Vivid White",
+    "whiteSpecs": {
+      "code": "W01A1",
+      "LRV": 90.00,
+      "targetRGB": [255, 255, 255]
+    },
+    "matrixCalibration": {
+      "type": "3x4 transformation matrix",
+      "colorPatches": 7,
+      "colors": ["Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "Black"],
+      "method": "least-squares fitting",
+      "validation": "Delta E 2000 targeting ΔE < 2",
+      "storage": "NVS"
+    },
+    "targetRange": {
+      "XYZ": [30000, 50000],
+      "controlVariable": "max(R_raw, G_raw, B_raw)",
+      "sensorRange": [5000, 60000]
+    },
+    "blackPoint": {
+      "enabled": true,
+      "method": "LEDs off during calibration",
+      "purpose": "measure true darkness/zero light conditions"
+    }
+  },
+  "ledControl": {
+    "pin": 5,
+    "brightness": {
+      "min": 0,
+      "max": 255,
+      "default": 128,
+      "adjustmentStep": 40
+    },
+    "enhancedMode": {
+      "enabled": true,
+      "autoOptimization": true,
+      "controlVariable": "max(R_raw, G_raw, B_raw) or average",
+      "targetRange": [5000, 60000],
+      "smoothing": "exponential moving average",
+      "irCompensation": true,
+      "fallbackAdjustments": "dynamic ATIME/AGAIN when LED limits reached"
+    },
+    "liveMetrics": {
+      "updateInterval": "1-2 seconds",
+      "channels": ["R", "G", "B", "C", "IR"],
+      "statusIndicators": {
+        "green": "optimal values",
+        "red": "poor values",
+        "yellow": "borderline values"
+      }
+    }
+  },
+  "api": {
+    "baseURL": "http://192.168.0.152",
+    "endpoints": {
+      "sensor": "/sensor",
+      "ledControl": "/led",
+      "calibration": "/calibrate",
+      "settings": "/settings",
+      "status": "/status",
+      "samples": "/samples",
+      "samplesDelete": "/samples/{id}",
+      "samplesClear": "/samples/clear"
+    },
+    "methods": {
+      "GET": ["status", "samples"],
+      "POST": ["settings", "calibration", "led"],
+      "DELETE": ["samples/{id}", "samples/clear"]
+    }
+  },
+  "dataSource": {
+    "googleAppsScript": {
+      "url": "https://script.google.com/macros/s/AKfycbwHl2P2eFVBePSZ0PbskN_YYiyDyfIwL7SbWEhqWNzZeVvhW6P-76Gb4Xy63ifSkzUi/exec",
+      "method": "GET with URL parameters",
+      "colorDatabase": "dulux.json",
+      "driveFileID": "1ICWL4r_LvhUrQAvpObKFzUGDO7DUDaen",
+      "tolerance": "±1 RGB for perfect matches",
+      "algorithm": "Euclidean distance calculation"
+    }
+  },
+  "webInterface": {
+    "framework": "React TypeScript",
+    "mainComponent": "App.tsx",
+    "settingsComponent": "SettingsPanel.tsx",
+    "deviceSettingsButton": {
+      "type": "external link",
+      "styling": "amber colors",
+      "location": "header nav section",
+      "url": "DEVICE_BASE_URL + API_PATHS.SETTINGS"
+    },
+    "notifications": {
+      "type": "inline success/error",
+      "pattern": "toast notifications",
+      "location": "settings/main pages"
+    }
+  },
+  "testing": {
+    "integration": {
+      "location": "SettingsPanel.tsx",
+      "section": "🧪 Sensor Diagnostics & Testing",
+      "expandable": true,
+      "realTime": true
+    },
+    "testTypes": [
+      "Test Current Settings",
+      "Test Valid Values", 
+      "Test Invalid Values",
+      "Test Combined Settings",
+      "Run Full Test Suite"
+    ],
+    "parameterValidation": {
+      "autoZeroMode": [0, 1],
+      "autoZeroFrequency": [0, 255],
+      "waitTime": [0, 255]
+    },
+    "externalTools": [
+      "quick_test.ps1",
+      "test_calibration.py", 
+      "mock_esp32_server.py"
+    ]
+  },
+  "storage": {
+    "nvs": {
+      "calibrationData": "white balance factors",
+      "matrixCalibration": "3x4 transformation matrix",
+      "ledSettings": "enhanced mode preferences",
+      "sensorSettings": "ATIME, AGAIN, brightness"
+    },
+    "eeprom": {
+      "samples": "color measurement samples",
+      "deleteSupport": "individual and bulk operations"
+    }
+  },
+  "colorSpace": {
+    "input": "TCS3430 raw sensor data (R,G,B,C,IR)",
+    "processing": "CIE 1931 color matching functions",
+    "intermediate": "XYZ coordinates with white point normalization",
+    "output": "sRGB with gamma correction",
+    "calibration": "chromatic adaptation using white point Y component"
+  },
+  "userPreferences": {
+    "calibrationReporting": "concise, settings-focused",
+    "errorHandling": "inline messages, no redirects",
+    "buildDeployment": "automated pipelines preferred",
+    "problemSolving": "fix issues as encountered",
+    "packageManagement": "use package managers, not manual edits",
+    "testingApproach": "integrated into main UI, not standalone files"
+  },
+  "developmentGuidelines": {
+    "codeWrapping": "<augment_code_snippet> XML tags with path and mode attributes",
+    "planning": "detailed plans before implementation",
+    "informationGathering": "codebase-retrieval before edits",
+    "testing": "write and run tests for code changes",
+    "conservative": "respect existing codebase structure"
+  }
+}

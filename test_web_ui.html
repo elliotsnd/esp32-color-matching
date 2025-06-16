@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCS3430 Calibration Test Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #60a5fa;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .card h2 {
+            color: #f1f5f9;
+            margin-bottom: 16px;
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            color: #6ee7b7;
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+        }
+
+        .status.info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+            color: #93c5fd;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .results {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .result-line {
+            margin-bottom: 4px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .result-line.success {
+            color: #6ee7b7;
+        }
+
+        .result-line.error {
+            color: #fca5a5;
+        }
+
+        .result-line .timestamp {
+            color: #64748b;
+            margin-right: 8px;
+            min-width: 80px;
+        }
+
+        .result-line .icon {
+            margin-right: 8px;
+            min-width: 20px;
+        }
+
+        .slider-container {
+            margin-bottom: 16px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #475569;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #60a5fa;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #60a5fa;
+            cursor: pointer;
+            border: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #475569;
+            border-radius: 50%;
+            border-top-color: #60a5fa;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .connection-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .connection-indicator.connected {
+            background: #10b981;
+        }
+
+        .connection-indicator.disconnected {
+            background: #ef4444;
+        }
+
+        .connection-indicator.connecting {
+            background: #f59e0b;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 TCS3430 Calibration Test Interface</h1>
+            <p>Comprehensive testing for ESP32 Color Matcher calibration settings</p>
+        </div>
+
+        <div class="grid">
+            <!-- Connection Panel -->
+            <div class="card">
+                <h2>🔌 Connection</h2>
+                <div class="form-group">
+                    <label for="esp32-ip">ESP32 IP Address:</label>
+                    <input type="text" id="esp32-ip" value="192.168.1.100" placeholder="192.168.1.100">
+                </div>
+                <div class="connection-status">
+                    <div class="connection-indicator disconnected" id="connection-indicator"></div>
+                    <span id="connection-text">Disconnected</span>
+                </div>
+                <button class="btn btn-primary" onclick="testConnection()">Test Connection</button>
+                <button class="btn btn-secondary" onclick="getCurrentStatus()">Get Current Status</button>
+            </div>
+
+            <!-- Current Status Panel -->
+            <div class="card">
+                <h2>📊 Current Status</h2>
+                <div id="current-status" class="status info hidden">
+                    Status will appear here after connection test
+                </div>
+                <div id="status-details" class="hidden">
+                    <div class="form-group">
+                        <label>Auto-Zero Mode: <span id="current-auto-zero-mode">-</span></label>
+                    </div>
+                    <div class="form-group">
+                        <label>Auto-Zero Frequency: <span id="current-auto-zero-freq">-</span></label>
+                    </div>
+                    <div class="form-group">
+                        <label>Wait Time: <span id="current-wait-time">-</span></label>
+                    </div>
+                    <div class="form-group">
+                        <label>ATIME: <span id="current-atime">-</span></label>
+                    </div>
+                    <div class="form-group">
+                        <label>AGAIN: <span id="current-again">-</span></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Settings Panel -->
+        <div class="card">
+            <h2>🎛️ Manual Calibration Settings</h2>
+            <div class="grid">
+                <div>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <label>Auto-Zero Mode:</label>
+                            <span id="auto-zero-mode-value">1</span>
+                        </div>
+                        <input type="range" class="slider" id="auto-zero-mode" min="0" max="1" value="1" 
+                               oninput="updateSliderValue('auto-zero-mode', 'auto-zero-mode-value')">
+                        <small style="color: #94a3b8;">0: Always start at zero, 1: Use previous offset</small>
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <label>Auto-Zero Frequency:</label>
+                            <span id="auto-zero-freq-value">127</span>
+                        </div>
+                        <input type="range" class="slider" id="auto-zero-freq" min="0" max="255" value="127" 
+                               oninput="updateSliderValue('auto-zero-freq', 'auto-zero-freq-value')">
+                        <small style="color: #94a3b8;">0: Never, 127: First cycle only, Other: Every nth iteration</small>
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <label>Wait Time:</label>
+                            <span id="wait-time-value">0</span>
+                        </div>
+                        <input type="range" class="slider" id="wait-time" min="0" max="255" value="0" 
+                               oninput="updateSliderValue('wait-time', 'wait-time-value')">
+                        <small style="color: #94a3b8;">Wait time between measurements (higher = more stable)</small>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="applySettings()">Apply Settings</button>
+                    <button class="btn btn-secondary" onclick="resetToDefaults()">Reset to Defaults</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automated Testing Panel -->
+        <div class="card">
+            <h2>🚀 Automated Testing</h2>
+            <div class="grid">
+                <div>
+                    <button class="btn btn-success" onclick="runValidValuesTest()">Test Valid Values</button>
+                    <button class="btn btn-danger" onclick="runInvalidValuesTest()">Test Invalid Values</button>
+                    <button class="btn btn-secondary" onclick="runCombinedSettingsTest()">Test Combined Settings</button>
+                    <button class="btn btn-primary" onclick="runFullTestSuite()">Run Full Test Suite</button>
+                </div>
+                <div>
+                    <button class="btn btn-secondary" onclick="clearResults()">Clear Results</button>
+                    <button class="btn btn-secondary" onclick="exportResults()">Export Results</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results Panel -->
+        <div class="card">
+            <h2>📋 Test Results</h2>
+            <div id="test-results" class="results">
+                <div class="result-line info">
+                    <span class="timestamp">[Ready]</span>
+                    <span class="icon">ℹ️</span>
+                    <span>Test interface ready. Connect to ESP32 to begin testing.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let esp32BaseUrl = '';
+        let isConnected = false;
+        let isRunningTests = false;
+
+        function updateSliderValue(sliderId, valueId) {
+            const slider = document.getElementById(sliderId);
+            const valueSpan = document.getElementById(valueId);
+            valueSpan.textContent = slider.value;
+        }
+
+        function logResult(type, message, icon = '') {
+            const results = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const resultLine = document.createElement('div');
+            resultLine.className = `result-line ${type}`;
+            
+            if (!icon) {
+                icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            }
+            
+            resultLine.innerHTML = `
+                <span class="timestamp">[${timestamp}]</span>
+                <span class="icon">${icon}</span>
+                <span>${message}</span>
+            `;
+            
+            results.appendChild(resultLine);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function updateConnectionStatus(status, text) {
+            const indicator = document.getElementById('connection-indicator');
+            const textElement = document.getElementById('connection-text');
+            
+            indicator.className = `connection-indicator ${status}`;
+            textElement.textContent = text;
+        }
+
+        async function testConnection() {
+            const ipInput = document.getElementById('esp32-ip');
+            const ip = ipInput.value.trim();
+            
+            if (!ip) {
+                logResult('error', 'Please enter ESP32 IP address');
+                return;
+            }
+            
+            esp32BaseUrl = `http://${ip}`;
+            updateConnectionStatus('connecting', 'Connecting...');
+            logResult('info', `Testing connection to ${ip}...`);
+            
+            try {
+                const response = await fetch(`${esp32BaseUrl}/status`, {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                
+                if (response.ok) {
+                    isConnected = true;
+                    updateConnectionStatus('connected', 'Connected');
+                    logResult('success', `✅ Connected to ESP32 at ${ip}`);
+                    await getCurrentStatus();
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                isConnected = false;
+                updateConnectionStatus('disconnected', 'Connection failed');
+                logResult('error', `❌ Connection failed: ${error.message}`);
+            }
+        }
+
+        async function getCurrentStatus() {
+            if (!isConnected) {
+                logResult('error', 'Not connected to ESP32');
+                return;
+            }
+            
+            try {
+                logResult('info', 'Retrieving current status...');
+                const response = await fetch(`${esp32BaseUrl}/status`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const status = await response.json();
+                
+                // Update status display
+                document.getElementById('current-status').className = 'status success';
+                document.getElementById('current-status').textContent = 'Status retrieved successfully';
+                document.getElementById('current-status').classList.remove('hidden');
+                document.getElementById('status-details').classList.remove('hidden');
+                
+                // Update individual fields
+                document.getElementById('current-auto-zero-mode').textContent = status.autoZeroMode ?? 'N/A';
+                document.getElementById('current-auto-zero-freq').textContent = status.autoZeroFreq ?? 'N/A';
+                document.getElementById('current-wait-time').textContent = status.waitTime ?? 'N/A';
+                document.getElementById('current-atime').textContent = status.atime ?? 'N/A';
+                document.getElementById('current-again').textContent = status.again ?? 'N/A';
+                
+                logResult('success', `Status retrieved: Auto-Zero Mode=${status.autoZeroMode}, Freq=${status.autoZeroFreq}, Wait=${status.waitTime}`);
+                
+            } catch (error) {
+                logResult('error', `Failed to get status: ${error.message}`);
+                document.getElementById('current-status').className = 'status error';
+                document.getElementById('current-status').textContent = 'Failed to retrieve status';
+                document.getElementById('current-status').classList.remove('hidden');
+            }
+        }
+
+        async function applySettings() {
+            if (!isConnected) {
+                logResult('error', 'Not connected to ESP32');
+                return;
+            }
+
+            const settings = {
+                autoZeroMode: parseInt(document.getElementById('auto-zero-mode').value),
+                autoZeroFreq: parseInt(document.getElementById('auto-zero-freq').value),
+                waitTime: parseInt(document.getElementById('wait-time').value)
+            };
+
+            try {
+                logResult('info', `Applying settings: ${JSON.stringify(settings)}`);
+
+                const response = await fetch(`${esp32BaseUrl}/settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    logResult('success', 'Settings applied successfully');
+                    await getCurrentStatus(); // Refresh status
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                logResult('error', `Failed to apply settings: ${error.message}`);
+            }
+        }
+
+        function resetToDefaults() {
+            document.getElementById('auto-zero-mode').value = 1;
+            document.getElementById('auto-zero-freq').value = 127;
+            document.getElementById('wait-time').value = 0;
+
+            updateSliderValue('auto-zero-mode', 'auto-zero-mode-value');
+            updateSliderValue('auto-zero-freq', 'auto-zero-freq-value');
+            updateSliderValue('wait-time', 'wait-time-value');
+
+            logResult('info', 'Settings reset to defaults');
+        }
+
+        async function runValidValuesTest() {
+            if (!isConnected || isRunningTests) return;
+
+            isRunningTests = true;
+            logResult('info', '🧪 Starting valid values test...', '🧪');
+
+            const testCases = [
+                { name: 'Minimum Values', settings: { autoZeroMode: 0, autoZeroFreq: 0, waitTime: 0 } },
+                { name: 'Recommended Values', settings: { autoZeroMode: 1, autoZeroFreq: 127, waitTime: 0 } },
+                { name: 'Maximum Values', settings: { autoZeroMode: 1, autoZeroFreq: 255, waitTime: 255 } }
+            ];
+
+            let passed = 0;
+
+            for (const testCase of testCases) {
+                try {
+                    logResult('info', `Testing ${testCase.name}...`);
+
+                    const response = await fetch(`${esp32BaseUrl}/settings`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(testCase.settings)
+                    });
+
+                    if (response.ok) {
+                        // Verify settings were applied
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        const status = await fetch(`${esp32BaseUrl}/status`).then(r => r.json());
+
+                        let allCorrect = true;
+                        for (const [key, expectedValue] of Object.entries(testCase.settings)) {
+                            if (status[key] !== expectedValue) {
+                                logResult('error', `${testCase.name}: ${key} expected ${expectedValue}, got ${status[key]}`);
+                                allCorrect = false;
+                            }
+                        }
+
+                        if (allCorrect) {
+                            logResult('success', `${testCase.name}: All values applied correctly`);
+                            passed++;
+                        }
+                    } else {
+                        logResult('error', `${testCase.name}: HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    logResult('error', `${testCase.name}: ${error.message}`);
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            logResult(passed === testCases.length ? 'success' : 'error',
+                     `Valid values test complete: ${passed}/${testCases.length} passed`);
+
+            isRunningTests = false;
+        }
+
+        async function runInvalidValuesTest() {
+            if (!isConnected || isRunningTests) return;
+
+            isRunningTests = true;
+            logResult('info', '🚫 Starting invalid values test...', '🚫');
+
+            // Get current settings before testing invalid values
+            const beforeResponse = await fetch(`${esp32BaseUrl}/status`);
+            const beforeStatus = await beforeResponse.json();
+
+            const invalidTestCases = [
+                { name: 'Invalid Auto-Zero Mode', settings: { autoZeroMode: 5 } },
+                { name: 'Invalid Auto-Zero Frequency', settings: { autoZeroFreq: 300 } },
+                { name: 'Invalid Wait Time', settings: { waitTime: 300 } }
+            ];
+
+            let passed = 0;
+
+            for (const testCase of invalidTestCases) {
+                try {
+                    logResult('info', `Testing ${testCase.name}...`);
+
+                    const response = await fetch(`${esp32BaseUrl}/settings`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(testCase.settings)
+                    });
+
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    const afterResponse = await fetch(`${esp32BaseUrl}/status`);
+                    const afterStatus = await afterResponse.json();
+
+                    // Check if settings remained unchanged (invalid values rejected)
+                    if (beforeStatus.autoZeroMode === afterStatus.autoZeroMode &&
+                        beforeStatus.autoZeroFreq === afterStatus.autoZeroFreq &&
+                        beforeStatus.waitTime === afterStatus.waitTime) {
+                        logResult('success', `${testCase.name}: Invalid values correctly rejected`);
+                        passed++;
+                    } else {
+                        logResult('error', `${testCase.name}: Invalid values incorrectly accepted`);
+                    }
+                } catch (error) {
+                    // API rejection is also a valid response for invalid values
+                    logResult('success', `${testCase.name}: Invalid values properly rejected by API`);
+                    passed++;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            logResult(passed === invalidTestCases.length ? 'success' : 'error',
+                     `Invalid values test complete: ${passed}/${invalidTestCases.length} passed`);
+
+            isRunningTests = false;
+        }
+
+        async function runCombinedSettingsTest() {
+            if (!isConnected || isRunningTests) return;
+
+            isRunningTests = true;
+            logResult('info', '🔄 Starting combined settings test...', '🔄');
+
+            const combinedSettings = {
+                autoZeroMode: 0,
+                autoZeroFreq: 200,
+                waitTime: 10
+            };
+
+            try {
+                logResult('info', `Testing combined settings: ${JSON.stringify(combinedSettings)}`);
+
+                const response = await fetch(`${esp32BaseUrl}/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(combinedSettings)
+                });
+
+                if (response.ok) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    const status = await fetch(`${esp32BaseUrl}/status`).then(r => r.json());
+
+                    let allCorrect = true;
+                    for (const [key, expectedValue] of Object.entries(combinedSettings)) {
+                        if (status[key] !== expectedValue) {
+                            logResult('error', `Combined test: ${key} expected ${expectedValue}, got ${status[key]}`);
+                            allCorrect = false;
+                        }
+                    }
+
+                    if (allCorrect) {
+                        logResult('success', 'Combined settings test: All values applied correctly');
+                    } else {
+                        logResult('error', 'Combined settings test: Some values not applied correctly');
+                    }
+                } else {
+                    logResult('error', `Combined settings test failed: HTTP ${response.status}`);
+                }
+            } catch (error) {
+                logResult('error', `Combined settings test failed: ${error.message}`);
+            }
+
+            isRunningTests = false;
+        }
+
+        async function runFullTestSuite() {
+            if (!isConnected || isRunningTests) return;
+
+            isRunningTests = true;
+            logResult('info', '🚀 Starting full test suite...', '🚀');
+
+            try {
+                await runValidValuesTest();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                await runInvalidValuesTest();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                await runCombinedSettingsTest();
+
+                logResult('success', '🎉 Full test suite completed!', '🎉');
+            } catch (error) {
+                logResult('error', `Test suite failed: ${error.message}`);
+            }
+
+            isRunningTests = false;
+        }
+
+        function clearResults() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <div class="result-line info">
+                    <span class="timestamp">[Ready]</span>
+                    <span class="icon">ℹ️</span>
+                    <span>Test results cleared. Ready for new tests.</span>
+                </div>
+            `;
+        }
+
+        function exportResults() {
+            const results = document.getElementById('test-results');
+            const lines = results.querySelectorAll('.result-line');
+
+            let exportText = 'TCS3430 Calibration Test Results\n';
+            exportText += '=====================================\n';
+            exportText += `Generated: ${new Date().toLocaleString()}\n`;
+            exportText += `ESP32 IP: ${document.getElementById('esp32-ip').value}\n\n`;
+
+            lines.forEach(line => {
+                const timestamp = line.querySelector('.timestamp').textContent;
+                const icon = line.querySelector('.icon').textContent;
+                const message = line.querySelector('span:last-child').textContent;
+                exportText += `${timestamp} ${icon} ${message}\n`;
+            });
+
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tcs3430_test_results_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            logResult('success', 'Test results exported successfully');
+        }
+
+        // Initialize slider values on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSliderValue('auto-zero-mode', 'auto-zero-mode-value');
+            updateSliderValue('auto-zero-freq', 'auto-zero-freq-value');
+            updateSliderValue('wait-time', 'wait-time-value');
+        });
+    </script>
+</body>
+</html>

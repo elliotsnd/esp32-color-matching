@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Calibration Error Duration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e293b;
+            color: white;
+            padding: 20px;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .toast.error {
+            background-color: #dc2626;
+        }
+        
+        .toast.success {
+            background-color: #16a34a;
+        }
+        
+        .animate-fadeInOutBack {
+            animation: fadeInOutBack 3s ease-in-out forwards;
+        }
+        
+        .animate-fadeInOutBackLong {
+            animation: fadeInOutBackLong 13s ease-in-out forwards;
+        }
+        
+        @keyframes fadeInOutBack {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10%, 90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        @keyframes fadeInOutBackLong {
+            0% { opacity: 0; transform: translateY(-20px); }
+            5%, 95% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background-color: #2563eb;
+        }
+        
+        .error-btn {
+            background-color: #dc2626;
+        }
+        
+        .error-btn:hover {
+            background-color: #b91c1c;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .description {
+            background-color: #374151;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Calibration Error Duration</h1>
+        
+        <div class="description">
+            <h2>Test Description</h2>
+            <p>This test demonstrates the extended duration for calibration saturation errors:</p>
+            <ul>
+                <li><strong>Normal errors:</strong> Display for 3 seconds</li>
+                <li><strong>Calibration saturation errors:</strong> Display for 13 seconds (10 seconds longer)</li>
+            </ul>
+            <p>Click the buttons below to test both scenarios:</p>
+        </div>
+        
+        <button onclick="showNormalError()">Show Normal Error (3 seconds)</button>
+        <button onclick="showCalibrationError()" class="error-btn">Show Calibration Saturation Error (13 seconds)</button>
+        <button onclick="showSuccessMessage()">Show Success Message (3 seconds)</button>
+    </div>
+
+    <script>
+        let toastCounter = 0;
+        
+        function showToast(message, type, customDuration) {
+            // Remove any existing toast
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // Create new toast
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            
+            // Check if this is a calibration saturation error and apply appropriate animation
+            const isCalibrationSaturationError = message.includes('Calibration values too high (saturated)');
+            const duration = customDuration || (isCalibrationSaturationError ? 13000 : 3000);
+            
+            if (isCalibrationSaturationError) {
+                toast.classList.add('animate-fadeInOutBackLong');
+            } else {
+                toast.classList.add('animate-fadeInOutBack');
+            }
+            
+            document.body.appendChild(toast);
+            
+            // Remove toast after animation completes
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, duration);
+            
+            console.log(`Toast shown: "${message}" (${type}) - Duration: ${duration}ms`);
+        }
+        
+        function showNormalError() {
+            showToast('This is a normal error message that will disappear in 3 seconds.', 'error');
+        }
+        
+        function showCalibrationError() {
+            showToast('API Error: 400 Bad Request - Calibration values too high (saturated). Reduce brightness or move away from light source.', 'error');
+        }
+        
+        function showSuccessMessage() {
+            showToast('This is a success message that will disappear in 3 seconds.', 'success');
+        }
+    </script>
+</body>
+</html>

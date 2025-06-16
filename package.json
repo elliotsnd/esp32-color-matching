@@ -1,0 +1,31 @@
+{
+  "name": "esp32-color-matcher-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "node scripts/deploy.js",
+    "deploy:skip-upload": "node scripts/deploy.js --skip-upload",
+    "deploy:watch": "node scripts/deploy.js --watch",
+    "deploy:verbose": "node scripts/deploy.js --verbose",
+    "esp32:upload": "pio run --target uploadfs",
+    "esp32:monitor": "pio device monitor",
+    "esp32:build": "pio run"
+  },
+  "dependencies": {
+    "lucide-react": "^0.515.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "terser": "^5.42.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "ESP32 Color Matcher UI",
+  "description": "A web interface to control an ESP32-based color matching device. Allows scanning colors, saving samples, adjusting settings, and performing device calibration.",
+  "requestFramePermissions": []
+}
